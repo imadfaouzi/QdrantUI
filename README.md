@@ -17,7 +17,7 @@ A **beautiful, modern, and feature-rich web-based administration interface** for
 - **Real-time Updates** - Live connection status and auto-refresh capabilities
 - **Developer Friendly** - Clean code, well-documented, easy to customize
 
-![Qdrant Admin UI Screenshot](https://via.placeholder.com/800x400/667eea/ffffff?text=Qdrant+Admin+UI+Screenshot)
+![Qdrant Admin UI Screenshot](./1.png)
 
 ## ✨ Key Features
 
@@ -66,51 +66,82 @@ A **beautiful, modern, and feature-rich web-based administration interface** for
 
 ### Installation Methods
 
-#### Method 1: Direct Download (Recommended)
+## 🌍 Live Preview (GitHub Pages)
+
+> 🧪 View the live demo (static UI only):
+[https://imadfaouzi.github.io/QdrantUI](https://imadfaouzi.github.io/QdrantUI)
+
+---
+
+## 📦 Quick Start
+
+### 🔄 Clone the repository
+
 ```bash
-# Download the HTML file
-curl -O https://raw.githubusercontent.com/your-repo/qdrant-admin-ui/main/qdrant-admin.html
-
-# Open in browser
-open qdrant-admin.html
+git clone https://github.com/imadfaouzi/QdrantUI.git
+cd QdrantUI
 ```
 
-#### Method 2: Clone Repository
+### 🧭 Open in your browser
+
 ```bash
-git clone https://github.com/your-repo/qdrant-admin-ui.git
-cd qdrant-admin-ui
-open qdrant-admin.html
+# Simply open the file in your browser
+open index.html     # macOS
+start index.html    # Windows
+xdg-open index.html # Linux
 ```
 
-#### Method 3: Docker Compose Integration
-Add to your existing `docker-compose.yml`:
+---
 
-```yaml
-version: '3.8'
-services:
-  qdrant:
-    image: qdrant/qdrant:v1.9.2
-    container_name: qdrant
-    ports:
-      - "6333:6333"  # HTTP API
-      - "6334:6334"  # gRPC API
-    volumes:
-      - qdrant_storage:/qdrant/storage
-    restart: unless-stopped
+## 🛠️ Customization
 
-  qdrant-admin:
-    image: nginx:alpine
-    container_name: qdrant-admin-ui
-    ports:
-      - "8080:80"
-    volumes:
-      - ./qdrant-admin.html:/usr/share/nginx/html/index.html:ro
-    depends_on:
-      - qdrant
+This project is completely static and uses **no build tools**. You can:
 
-volumes:
-  qdrant_storage:
+- Point the API URLs in the JavaScript to your own Qdrant instance
+- Add authentication headers if needed
+- Style or theme the UI easily with vanilla CSS
+
+---
+
+## 📁 Project Structure
+
+```bash
+QdrantUI/
+├── index.html        # Main UI entry point
+├── styles.css        # UI styling (optional)
+├── script.js         # Logic and API interaction
+└── README.md         # This file
 ```
+
+> ⚠️ This project is framework-free. No React, Vue, Angular, or bundlers.
+
+---
+
+## 💬 Feedback & Contributions
+
+We welcome suggestions, improvements, and contributions!  
+Feel free to open issues or submit pull requests.
+
+---
+
+## 📚 About Qdrant
+
+> [Qdrant](https://qdrant.tech/) is an open-source vector search engine optimized for the next generation of AI applications.
+
+This project is an unofficial frontend tool to simplify Qdrant usage visually.
+
+---
+
+## 📜 License
+
+MIT © [Imad Faouzi](https://github.com/imadfaouzi)
+
+---
+
+### 🔎 Keywords (SEO)
+
+`qdrant ui`, `qdrant dashboard`, `qdrant frontend`, `vector database ui`, `html qdrant`, `javascript qdrant api`, `open source qdrant interface`, `lightweight vector db ui`, `qdrant viewer`, `qdrant json viewer`, `qdrant web`
+
 
 ## 🔧 Configuration
 
@@ -184,100 +215,6 @@ volumes:
 
 ## 🔧 Advanced Configuration
 
-### Environment Variables
-```bash
-# For containerized deployments
-QDRANT_URL=http://qdrant:6333
-QDRANT_API_KEY=your-secret-key
-AUTO_CONNECT=true
-REFRESH_INTERVAL=30000
-```
-
-### Custom Styling
-The interface supports easy customization through CSS variables:
-```css
-:root {
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
-  --success-color: #10b981;
-  --error-color: #ef4444;
-}
-```
-
-## 🚀 Performance & Scalability
-
-- **Lightweight**: Single HTML file under 100KB
-- **Fast Loading**: Minimal dependencies, pure JavaScript
-- **Memory Efficient**: Optimized for large vector collections
-- **Responsive**: Handles thousands of points with pagination
-- **Network Optimized**: Efficient API calls with request batching
-
-## 🔒 Security Considerations
-
-- **API Key Support** for authenticated Qdrant instances
-- **HTTPS Compatible** for secure remote connections
-- **No Data Storage** - all operations are direct API calls
-- **Client-Side Only** - no server-side components required
-- **CORS Compliant** for cross-origin requests
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-### **Bug Reports**
-- Use GitHub Issues with detailed reproduction steps
-- Include browser version and Qdrant version
-- Provide error messages and console logs
-
-### **Feature Requests**
-- Check existing issues before creating new ones
-- Describe the use case and expected behavior
-- Consider contributing the implementation
-
-### **Code Contributions**
-```bash
-1. Fork the repository
-2. Create feature branch: git checkout -b feature/amazing-feature
-3. Commit changes: git commit -m 'Add amazing feature'
-4. Push to branch: git push origin feature/amazing-feature
-5. Open Pull Request
-```
-
-### **Development Setup**
-```bash
-git clone https://github.com/your-repo/qdrant-admin-ui.git
-cd qdrant-admin-ui
-
-# Start local Qdrant for testing
-docker run -p 6333:6333 qdrant/qdrant:v1.9.2
-
-# Open in browser with live reload
-python -m http.server 8000
-```
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Qdrant Team** for creating an amazing vector database
-- **Open Source Community** for inspiration and feedback
-- **Contributors** who help improve this project
-- **Users** who provide valuable bug reports and feature requests
-
-## 📞 Support & Community
-
-- **GitHub Issues**: [Report bugs and request features](https://github.com/your-repo/qdrant-admin-ui/issues)
-- **Discussions**: [Community discussions and Q&A](https://github.com/your-repo/qdrant-admin-ui/discussions)
-- **Qdrant Discord**: [Join the official Qdrant community](https://discord.gg/qdrant)
-- **Documentation**: [Official Qdrant docs](https://qdrant.tech/documentation/)
-
-## 🔗 Related Projects
-
-- **[Qdrant](https://github.com/qdrant/qdrant)** - The vector database this UI manages
-- **[Qdrant Client](https://github.com/qdrant/qdrant-client)** - Official Python client
-- **[Qdrant JS](https://github.com/qdrant/qdrant-js)** - Official JavaScript client
 
 ## 📈 Roadmap
 
@@ -303,6 +240,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Made with ❤️ for the Vector Database Community**
 
-[🌟 Give it a Star](https://github.com/your-repo/qdrant-admin-ui) | [🐛 Report Bug](https://github.com/your-repo/qdrant-admin-ui/issues) | [💡 Request Feature](https://github.com/your-repo/qdrant-admin-ui/issues)
 
 </div>
