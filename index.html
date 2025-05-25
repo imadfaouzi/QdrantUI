@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qdrant Admin UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #10b981;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .connection-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .collections-list {
+            list-style: none;
+        }
+
+        .collection-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .collection-item:hover, .collection-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .main-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h4 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th, .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .json-viewer {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            overflow: auto;
+            max-height: 400px;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #7f1d1d;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .vector-input {
+            min-height: 100px;
+            font-family: monospace;
+        }
+
+        .search-results {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-score {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .connection-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Qdrant Admin UI</h1>
+            
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="connectionStatus">Disconnected</span>
+            </div>
+            
+            <div class="connection-form">
+                <input type="text" id="serverUrl" placeholder="Qdrant Server URL" value="http://localhost:6333">
+                <input type="text" id="apiKey" placeholder="API Key (optional)">
+                <button class="btn btn-primary" onclick="connectToQdrant()">Connect</button>
+                <button class="btn btn-secondary" onclick="refreshCollections()">Refresh</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>Collections</h3>
+                <ul class="collections-list" id="collectionsList"></ul>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="showCreateCollection()">
+                        ➕ Create Collection
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
+                    <button class="tab" onclick="showTab('points')">📍 Points</button>
+                    <button class="tab" onclick="showTab('search')">🔍 Search</button>
+                    <button class="tab" onclick="showTab('collections')">📁 Collections</button>
+                    <button class="tab" onclick="showTab('cluster')">🌐 Cluster</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalCollections">-</div>
+                            <div class="stat-label">Collections</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalPoints">-</div>
+                            <div class="stat-label">Total Points</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="clusterSize">-</div>
+                            <div class="stat-label">Cluster Size</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>Server Information</h4>
+                        <div id="serverInfo">Connect to view server information</div>
+                    </div>
+                </div>
+
+                <!-- Points Tab -->
+                <div id="points" class="tab-content">
+                    <div id="pointsAlert"></div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="showAddPoint()">➕ Add Point</button>
+                        <button class="btn btn-secondary" onclick="loadPoints()">🔄 Refresh</button>
+                        <button class="btn btn-danger" onclick="showDeletePoints()">🗑️ Delete Points</button>
+                    </div>
+
+                    <div id="pointsTable"></div>
+                </div>
+
+                <!-- Search Tab -->
+                <div id="search" class="tab-content">
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <h4>Vector Search</h4>
+                            <div class="form-group">
+                                <label>Query Vector (JSON array)</label>
+                                <textarea class="vector-input" id="searchVector" placeholder="[0.1, 0.2, 0.3, ...]"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Limit</label>
+                                <input type="number" id="searchLimit" value="10" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Score Threshold</label>
+                                <input type="number" id="scoreThreshold" step="0.01" placeholder="0.0">
+                            </div>
+                            <button class="btn btn-primary" onclick="performSearch()">🔍 Search</button>
+                        </div>
+
+                        <div class="card">
+                            <h4>Filters & Options</h4>
+                            <div class="form-group">
+                                <label>Filter (JSON)</label>
+                                <textarea id="searchFilter" placeholder='{"must": [{"key": "city", "match": {"value": "London"}}]}'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>With Payload</label>
+                                <select id="withPayload">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>With Vector</label>
+                                <select id="withVector">
+                                    <option value="false">No</option>
+                                    <option value="true">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Search Results</h4>
+                        <div id="searchResults"></div>
+                    </div>
+                </div>
+
+                <!-- Collections Tab -->
+                <div id="collections" class="tab-content">
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="showCreateCollection()">➕ Create Collection</button>
+                        <button class="btn btn-secondary" onclick="refreshCollections()">🔄 Refresh</button>
+                    </div>
+
+                    <div id="collectionsTable"></div>
+                </div>
+
+                <!-- Cluster Tab -->
+                <div id="cluster" class="tab-content">
+                    <div class="card">
+                        <h4>Cluster Information</h4>
+                        <div id="clusterInfo">Loading cluster information...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div id="modalContent"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirm" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentServer = null;
+        let currentCollection = null;
+        let apiKey = '';
+
+        async function makeRequest(endpoint, options = {}) {
+            const url = `${currentServer}${endpoint}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            if (apiKey) {
+                headers['api-key'] = apiKey;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                showAlert('error', `Request failed: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function connectToQdrant() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!serverUrl) {
+                showAlert('error', 'Please enter a server URL');
+                return;
+            }
+
+            try {
+                currentServer = serverUrl.endsWith('/') ? serverUrl.slice(0, -1) : serverUrl;
+                
+                const response = await makeRequest('/');
+                
+                document.getElementById('statusIndicator').classList.add('connected');
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                
+                showAlert('success', 'Successfully connected to Qdrant');
+                
+                await Promise.all([
+                    refreshCollections(),
+                    loadOverview(),
+                    loadClusterInfo()
+                ]);
+                
+            } catch (error) {
+                currentServer = null;
+                document.getElementById('statusIndicator').classList.remove('connected');
+                document.getElementById('connectionStatus').textContent = 'Connection failed';
+                showAlert('error', 'Failed to connect to Qdrant server');
+            }
+        }
+
+        async function refreshCollections() {
+            if (!currentServer) return;
+
+            try {
+                const response = await makeRequest('/collections');
+                const collections = response.result.collections || [];
+                
+                const collectionsList = document.getElementById('collectionsList');
+                collectionsList.innerHTML = '';
+                
+                collections.forEach(collection => {
+                    const li = document.createElement('li');
+                    li.className = 'collection-item';
+                    li.textContent = collection.name;
+                    li.onclick = () => selectCollection(collection.name);
+                    collectionsList.appendChild(li);
+                });
+
+                await loadCollectionsTable();
+                
+            } catch (error) {
+                console.error('Failed to load collections:', error);
+            }
+        }
+
+        function selectCollection(name) {
+            currentCollection = name;
+            
+            document.querySelectorAll('.collection-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            loadPoints();
+        }
+
+        async function loadOverview() {
+            if (!currentServer) return;
+
+            try {
+                const [collectionsResponse, clusterResponse] = await Promise.all([
+                    makeRequest('/collections'),
+                    makeRequest('/cluster').catch(() => ({ result: { status: 'single-node' } }))
+                ]);
+
+                const collections = collectionsResponse.result.collections || [];
+                document.getElementById('totalCollections').textContent = collections.length;
+
+                let totalPoints = 0;
+                for (const collection of collections) {
+                    try {
+                        const info = await makeRequest(`/collections/${collection.name}`);
+                        totalPoints += info.result.points_count || 0;
+                    } catch (e) {
+                        console.warn(`Failed to get info for collection ${collection.name}`);
+                    }
+                }
+                document.getElementById('totalPoints').textContent = totalPoints.toLocaleString();
+
+                const clusterSize = clusterResponse.result.peers ? 
+                    Object.keys(clusterResponse.result.peers).length : 1;
+                document.getElementById('clusterSize').textContent = clusterSize;
+
+                const serverInfo = await makeRequest('/');
+                document.getElementById('serverInfo').innerHTML = `
+                    <div class="json-viewer">${JSON.stringify(serverInfo.result, null, 2)}</div>
+                `;
+
+            } catch (error) {
+                console.error('Failed to load overview:', error);
+            }
+        }
+
+        async function loadPoints() {
+            if (!currentServer || !currentCollection) {
+                document.getElementById('pointsAlert').innerHTML = 
+                    '<div class="alert alert-info">Please select a collection to view points</div>';
+                return;
+            }
+
+            try {
+                const response = await makeRequest(`/collections/${currentCollection}/points`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        limit: 100,
+                        with_payload: true,
+                        with_vector: false
+                    })
+                });
+
+                const points = response.result.points || [];
+                
+                if (points.length === 0) {
+                    document.getElementById('pointsTable').innerHTML = 
+                        '<div class="alert alert-info">No points found in this collection</div>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Payload</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                points.forEach(point => {
+                    tableHTML += `
+                        <tr>
+                            <td><code>${point.id}</code></td>
+                            <td><pre style="max-width: 300px; overflow: auto; font-size: 11px;">${JSON.stringify(point.payload, null, 2)}</pre></td>
+                            <td>
+                                <button class="btn btn-danger btn-small" onclick="deletePoint('${point.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                document.getElementById('pointsTable').innerHTML = tableHTML;
+                document.getElementById('pointsAlert').innerHTML = '';
+
+            } catch (error) {
+                document.getElementById('pointsAlert').innerHTML = 
+                    '<div class="alert alert-error">Failed to load points</div>';
+            }
+        }
+
+        async function performSearch() {
+            if (!currentServer || !currentCollection) {
+                showAlert('error', 'Please select a collection first');
+                return;
+            }
+
+            const vectorText = document.getElementById('searchVector').value.trim();
+            if (!vectorText) {
+                showAlert('error', 'Please enter a query vector');
+                return;
+            }
+
+            try {
+                const queryVector = JSON.parse(vectorText);
+                const limit = parseInt(document.getElementById('searchLimit').value) || 10;
+                const scoreThreshold = parseFloat(document.getElementById('scoreThreshold').value) || null;
+                const filterText = document.getElementById('searchFilter').value.trim();
+                const withPayload = document.getElementById('withPayload').value === 'true';
+                const withVector = document.getElementById('withVector').value === 'true';
+
+                const searchRequest = {
+                    vector: queryVector,
+                    limit: limit,
+                    with_payload: withPayload,
+                    with_vector: withVector
+                };
+
+                if (scoreThreshold !== null) {
+                    searchRequest.score_threshold = scoreThreshold;
+                }
+
+                if (filterText) {
+                    searchRequest.filter = JSON.parse(filterText);
+                }
+
+                const response = await makeRequest(`/collections/${currentCollection}/points/search`, {
+                    method: 'POST',
+                    body: JSON.stringify(searchRequest)
+                });
+
+                const results = response.result || [];
+                displaySearchResults(results);
+
+            } catch (error) {
+                showAlert('error', `Search failed: ${error.message}`);
+            }
+        }
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No results found</div>';
+                return;
+            }
+
+            let html = '';
+            results.forEach((result, index) => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-score">Score: ${result.score.toFixed(4)}</div>
+                        <div><strong>ID:</strong> <code>${result.id}</code></div>
+                        ${result.payload ? `<div><strong>Payload:</strong></div><pre class="json-viewer" style="margin-top: 10px;">${JSON.stringify(result.payload, null, 2)}</pre>` : ''}
+                        ${result.vector ? `<div><strong>Vector:</strong> <code>[${result.vector.slice(0, 5).join(', ')}${result.vector.length > 5 ? '...' : ''}]</code></div>` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function loadCollectionsTable() {
+            if (!currentServer) return;
+
+            try {
+                const response = await makeRequest('/collections');
+                const collections = response.result.collections || [];
+                
+                if (collections.length === 0) {
+                    document.getElementById('collectionsTable').innerHTML = 
+                        '<div class="alert alert-info">No collections found</div>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Points Count</th>
+                                <th>Vector Size</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                for (const collection of collections) {
+                    try {
+                        const info = await makeRequest(`/collections/${collection.name}`);
+                        const config = info.result.config;
+                        const status = info.result.status;
+                        const pointsCount = info.result.points_count || 0;
+                        const vectorSize = config.params.vectors.size || 'N/A';
+
+                        tableHTML += `
+                            <tr>
+                                <td><strong>${collection.name}</strong></td>
+                                <td><span style="color: ${status === 'green' ? '#10b981' : '#ef4444'}">${status}</span></td>
+                                <td>${pointsCount.toLocaleString()}</td>
+                                <td>${vectorSize}</td>
+                                <td>
+                                    <button class="btn btn-secondary btn-small" onclick="selectCollection('${collection.name}')">View</button>
+                                    <button class="btn btn-danger btn-small" onclick="deleteCollection('${collection.name}')">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    } catch (e) {
+                        tableHTML += `
+                            <tr>
+                                <td><strong>${collection.name}</strong></td>
+                                <td><span style="color: #ef4444">Error</span></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-danger btn-small" onclick="deleteCollection('${collection.name}')">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+
+                tableHTML += '</tbody></table>';
+                document.getElementById('collectionsTable').innerHTML = tableHTML;
+
+            } catch (error) {
+                document.getElementById('collectionsTable').innerHTML = 
+                    '<div class="alert alert-error">Failed to load collections</div>';
+            }
+        }
+
+        async function loadClusterInfo() {
+            if (!currentServer) return;
+
+            try {
+                const response = await makeRequest('/cluster');
+                const clusterInfo = response.result;
+                
+                document.getElementById('clusterInfo').innerHTML = `
+                    <div class="json-viewer">${JSON.stringify(clusterInfo, null, 2)}</div>
+                `;
+            } catch (error) {
+                document.getElementById('clusterInfo').innerHTML = 
+                    '<div class="alert alert-info">Single node instance (no cluster)</div>';
+            }
+        }
+
+        function showCreateCollection() {
+            const modalContent = `
+                <h3>Create New Collection</h3>
+                <div class="form-group">
+                    <label>Collection Name</label>
+                    <input type="text" id="newCollectionName" placeholder="my_collection">
+                </div>
+                <div class="form-group">
+                    <label>Vector Size</label>
+                    <input type="number" id="vectorSize" placeholder="384" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Distance Metric</label>
+                    <select id="distanceMetric">
+                        <option value="Cosine">Cosine</option>
+                        <option value="Euclid">Euclidean</option>
+                        <option value="Dot">Dot Product</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>On Disk Payload</label>
+                    <select id="onDiskPayload">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                    </select>
+                </div>
+            `;
+            
+            showModal(modalContent, createCollection);
+        }
+
+        async function createCollection() {
+            const name = document.getElementById('newCollectionName').value.trim();
+            const size = parseInt(document.getElementById('vectorSize').value);
+            const distance = document.getElementById('distanceMetric').value;
+            const onDisk = document.getElementById('onDiskPayload').value === 'true';
+
+            if (!name || !size) {
+                showAlert('error', 'Please fill in all required fields');
+                return;
+            }
+
+            try {
+                await makeRequest(`/collections/${name}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        vectors: {
+                            size: size,
+                            distance: distance
+                        },
+                        on_disk_payload: onDisk
+                    })
+                });
+
+                showAlert('success', `Collection "${name}" created successfully`);
+                closeModal();
+                refreshCollections();
+            } catch (error) {
+                showAlert('error', `Failed to create collection: ${error.message}`);
+            }
+        }
+
+        async function deleteCollection(name) {
+            if (!confirm(`Are you sure you want to delete collection "${name}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                await makeRequest(`/collections/${name}`, {
+                    method: 'DELETE'
+                });
+
+                showAlert('success', `Collection "${name}" deleted successfully`);
+                refreshCollections();
+                
+                if (currentCollection === name) {
+                    currentCollection = null;
+                    document.getElementById('pointsTable').innerHTML = '';
+                }
+            } catch (error) {
+                showAlert('error', `Failed to delete collection: ${error.message}`);
+            }
+        }
+
+        function showAddPoint() {
+            if (!currentCollection) {
+                showAlert('error', 'Please select a collection first');
+                return;
+            }
+
+            const modalContent = `
+                <h3>Add Point to "${currentCollection}"</h3>
+                <div class="form-group">
+                    <label>Point ID</label>
+                    <input type="text" id="pointId" placeholder="Auto-generate" value="${Date.now()}">
+                </div>
+                <div class="form-group">
+                    <label>Vector (JSON array)</label>
+                    <textarea class="vector-input" id="pointVector" placeholder="[0.1, 0.2, 0.3, ...]"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Payload (JSON object)</label>
+                    <textarea id="pointPayload" placeholder='{"key": "value", "category": "example"}'></textarea>
+                </div>
+            `;
+            
+            showModal(modalContent, addPoint);
+        }
+
+        async function addPoint() {
+            const id = document.getElementById('pointId').value.trim() || Date.now().toString();
+            const vectorText = document.getElementById('pointVector').value.trim();
+            const payloadText = document.getElementById('pointPayload').value.trim();
+
+            if (!vectorText) {
+                showAlert('error', 'Vector is required');
+                return;
+            }
+
+            try {
+                const vector = JSON.parse(vectorText);
+                const payload = payloadText ? JSON.parse(payloadText) : {};
+
+                const point = {
+                    id: id,
+                    vector: vector,
+                    payload: payload
+                };
+
+                await makeRequest(`/collections/${currentCollection}/points`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        points: [point]
+                    })
+                });
+
+                showAlert('success', `Point "${id}" added successfully`);
+                closeModal();
+                loadPoints();
+            } catch (error) {
+                showAlert('error', `Failed to add point: ${error.message}`);
+            }
+        }
+
+        async function deletePoint(pointId) {
+            if (!confirm(`Are you sure you want to delete point "${pointId}"?`)) {
+                return;
+            }
+
+            try {
+                await makeRequest(`/collections/${currentCollection}/points/delete`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        points: [pointId]
+                    })
+                });
+
+                showAlert('success', `Point "${pointId}" deleted successfully`);
+                loadPoints();
+            } catch (error) {
+                showAlert('error', `Failed to delete point: ${error.message}`);
+            }
+        }
+
+        function showDeletePoints() {
+            if (!currentCollection) {
+                showAlert('error', 'Please select a collection first');
+                return;
+            }
+
+            const modalContent = `
+                <h3>Delete Points from "${currentCollection}"</h3>
+                <div class="form-group">
+                    <label>Delete Method</label>
+                    <select id="deleteMethod">
+                        <option value="ids">By IDs</option>
+                        <option value="filter">By Filter</option>
+                        <option value="all">All Points</option>
+                    </select>
+                </div>
+                <div class="form-group" id="deleteIdsGroup">
+                    <label>Point IDs (comma-separated)</label>
+                    <input type="text" id="deleteIds" placeholder="1,2,3">
+                </div>
+                <div class="form-group" id="deleteFilterGroup" style="display: none;">
+                    <label>Filter (JSON)</label>
+                    <textarea id="deleteFilter" placeholder='{"must": [{"key": "category", "match": {"value": "test"}}]}'></textarea>
+                </div>
+                <div class="alert alert-error">
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+            `;
+            
+            showModal(modalContent, deletePoints);
+            
+            document.getElementById('deleteMethod').onchange = function() {
+                const method = this.value;
+                document.getElementById('deleteIdsGroup').style.display = method === 'ids' ? 'block' : 'none';
+                document.getElementById('deleteFilterGroup').style.display = method === 'filter' ? 'block' : 'none';
+            };
+        }
+
+        async function deletePoints() {
+            const method = document.getElementById('deleteMethod').value;
+            
+            let deleteRequest = {};
+            
+            if (method === 'ids') {
+                const idsText = document.getElementById('deleteIds').value.trim();
+                if (!idsText) {
+                    showAlert('error', 'Please enter point IDs');
+                    return;
+                }
+                deleteRequest.points = idsText.split(',').map(id => id.trim());
+            } else if (method === 'filter') {
+                const filterText = document.getElementById('deleteFilter').value.trim();
+                if (!filterText) {
+                    showAlert('error', 'Please enter a filter');
+                    return;
+                }
+                try {
+                    deleteRequest.filter = JSON.parse(filterText);
+                } catch (e) {
+                    showAlert('error', 'Invalid filter JSON');
+                    return;
+                }
+            } else if (method === 'all') {
+                deleteRequest.filter = {};
+            }
+
+            try {
+                await makeRequest(`/collections/${currentCollection}/points/delete`, {
+                    method: 'POST',
+                    body: JSON.stringify(deleteRequest)
+                });
+
+                showAlert('success', 'Points deleted successfully');
+                closeModal();
+                loadPoints();
+            } catch (error) {
+                showAlert('error', `Failed to delete points: ${error.message}`);
+            }
+        }
+
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            // Load tab-specific data
+            if (tabName === 'points') {
+                loadPoints();
+            } else if (tabName === 'collections') {
+                loadCollectionsTable();
+            } else if (tabName === 'cluster') {
+                loadClusterInfo();
+            } else if (tabName === 'overview') {
+                loadOverview();
+            }
+        }
+
+        function showModal(content, confirmCallback) {
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalOverlay').style.display = 'block';
+            
+            const confirmBtn = document.getElementById('modalConfirm');
+            confirmBtn.onclick = confirmCallback;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            // Find the appropriate container for the alert
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                activeTab.insertBefore(alertDiv, activeTab.firstChild);
+            } else {
+                document.querySelector('.header').appendChild(alertDiv);
+            }
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to connect automatically if running locally
+            const serverUrl = document.getElementById('serverUrl').value;
+            if (serverUrl === 'http://localhost:6333') {
+                connectToQdrant();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+            
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshCollections();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            showCreateCollection();
+                        } else if (currentCollection) {
+                            showAddPoint();
+                        }
+                        break;
+                }
+            }
+        });
+
+        // Auto-refresh collections every 30 seconds if connected
+        setInterval(() => {
+            if (currentServer) {
+                refreshCollections();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
